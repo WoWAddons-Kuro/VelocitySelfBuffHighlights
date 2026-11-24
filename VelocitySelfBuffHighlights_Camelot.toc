@@ -12,6 +12,15 @@ Client\Client.lua
 Client\Client_ClassicEra.lua
 Client\Client_Forever.lua
 Client\Client_Select.lua
+Data\Forever\WARRIOR.lua
+Data\Forever\PALADIN.lua
+Data\Forever\HUNTER.lua
+Data\Forever\ROGUE.lua
+Data\Forever\PRIEST.lua
+Data\Forever\SHAMAN.lua
+Data\Forever\MAGE.lua
+Data\Forever\WARLOCK.lua
+Data\Forever\DRUID.lua
 Reminders.lua
 Bars.lua
 Core.lua

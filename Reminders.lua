@@ -2,7 +2,9 @@
 --
 -- A reminder = "glow the buttons of these spells while NONE of them is on the player". One spell
 -- (Thorns) or an exclusive family (seals) - same shape. `id` is the SV key: never rename once
--- released. Ranks ascending, Classic spell data; the self-buff aura carries the cast's ID.
+-- released. Spells are listed by NAME; the rank IDs come from the generated per-client, per-class
+-- tables in Data\ (AddonManagement\Scripts\GenSpellRanks.cs from Blizzard's DB2 data), so Forever
+-- and Era each test their own IDs. The self-buff aura carries the cast's ID.
 --
 -- Derived per reminder at SPELLS_CHANGED (VSBH.ResolveReminders):
 --   auraSet   = { [id] = true } for every rank >= the highest rank the player knows, per spell
@@ -10,11 +12,73 @@
 --   buttonSet = { [id] = true } for every rank of every spell (which buttons glow)
 local ADDON, VSBH = ...
 
-VSBH.Reminders = {
-	{ id = "DRUID.thorns", class = "DRUID", label = "Thorns",
-		spells = { { name = "Thorns", ranks = { 467, 782, 1075, 8914, 9756, 9910 } } } },
-	{ id = "DRUID.motw", class = "DRUID", label = "Mark of the Wild",
-		spells = { { name = "Mark of the Wild", ranks = { 1126, 5232, 6756, 5234, 8907, 9884, 9885 } } } },
+--------------------------------------------------------------------------------
+-- Spell data: only this character's class is kept; the other eight tables are dropped.
+--------------------------------------------------------------------------------
+VSBH.playerClass = select(2, UnitClass("player"))
+local classSpells = {} -- name -> { id, ... } ranks ascending
+do
+	local flavour = VSBH.Client.flavour
+	local all = VSBH.SpellData and VSBH.SpellData[flavour]
+	if all then
+		classSpells = all[VSBH.playerClass] or {}
+		if not all[VSBH.playerClass] then VSBH.WarnOnce("spelldata", "no spell data for " .. tostring(VSBH.playerClass) .. " on " .. flavour) end
+	else
+		VSBH.WarnOnce("spelldata", "no spell data loaded for flavour " .. tostring(flavour))
+	end
+	VSBH.SpellData = nil
+	collectgarbage("step", 1)
+end
+VSBH.ClassSpells = classSpells
+
+--------------------------------------------------------------------------------
+-- Catalogue: names only. A string entry is one spell; several strings = exclusive family.
+--------------------------------------------------------------------------------
+local CATALOGUE = {
+	-- Druid
+	{ id = "DRUID.thorns", class = "DRUID", label = "Thorns", spells = { "Thorns" } },
+	{ id = "DRUID.motw", class = "DRUID", label = "Mark of the Wild", spells = { "Mark of the Wild" } },
+	-- Mage
+	{ id = "MAGE.ai", class = "MAGE", label = "Arcane Intellect", spells = { "Arcane Intellect" } },
+	{ id = "MAGE.armor", class = "MAGE", label = "Armour (Frost / Ice / Mage Armor)",
+		spells = { "Frost Armor", "Ice Armor", "Mage Armor" } },
+	{ id = "MAGE.dampen", class = "MAGE", label = "Dampen Magic", defaultOff = true, spells = { "Dampen Magic" } },
+	{ id = "MAGE.amplify", class = "MAGE", label = "Amplify Magic", defaultOff = true, spells = { "Amplify Magic" } },
+	-- Paladin
+	-- (names checked against the generated data: Forever has Seal of Fury / Martyrdom and no
+	--  Blessing of Light / Salvation / Sanctuary; Era has no Seal of Fury. Unknown names are skipped.)
+	{ id = "PALADIN.seal", class = "PALADIN", label = "A seal (any)",
+		spells = { "Seal of Righteousness", "Seal of the Crusader", "Seal of Justice", "Seal of Light", "Seal of Wisdom",
+			"Seal of Fury", "Seal of Martyrdom" } },
+	{ id = "PALADIN.aura", class = "PALADIN", label = "An aura (any)",
+		spells = { "Devotion Aura", "Retribution Aura", "Concentration Aura", "Shadow Resistance Aura",
+			"Frost Resistance Aura", "Fire Resistance Aura" } },
+	{ id = "PALADIN.blessing", class = "PALADIN", label = "A blessing on yourself (any)",
+		spells = { "Blessing of Might", "Blessing of Wisdom", "Blessing of Kings", "Blessing of Sanctuary", "Blessing of Light",
+			"Blessing of Salvation", "Greater Blessing of Might", "Greater Blessing of Wisdom", "Greater Blessing of Kings",
+			"Greater Blessing of Sanctuary", "Greater Blessing of Light", "Greater Blessing of Salvation" } },
+	-- Priest
+	{ id = "PRIEST.fort", class = "PRIEST", label = "Power Word: Fortitude", spells = { "Power Word: Fortitude", "Prayer of Fortitude" } },
+	{ id = "PRIEST.innerfire", class = "PRIEST", label = "Inner Fire", spells = { "Inner Fire" } },
+	{ id = "PRIEST.spirit", class = "PRIEST", label = "Divine Spirit", spells = { "Divine Spirit", "Prayer of Spirit" } },
+	{ id = "PRIEST.shadowprot", class = "PRIEST", label = "Shadow Protection", defaultOff = true,
+		spells = { "Shadow Protection", "Prayer of Shadow Protection" } },
+	-- Warlock
+	{ id = "WARLOCK.armor", class = "WARLOCK", label = "Armour (Demon Skin / Demon Armor / Fel Armor)",
+		spells = { "Demon Skin", "Demon Armor", "Fel Armor" } },
+	{ id = "WARLOCK.detect", class = "WARLOCK", label = "Detect Invisibility", defaultOff = true,
+		spells = { "Detect Invisibility", "Detect Lesser Invisibility", "Detect Greater Invisibility" } },
+	-- Shaman
+	{ id = "SHAMAN.shield", class = "SHAMAN", label = "A shield (Lightning / Water / Earth)",
+		spells = { "Lightning Shield", "Water Shield", "Earth Shield" } },
+	-- Hunter
+	{ id = "HUNTER.aspect", class = "HUNTER", label = "An aspect (any)",
+		spells = { "Aspect of the Monkey", "Aspect of the Hawk", "Aspect of the Cheetah", "Aspect of the Beast",
+			"Aspect of the Pack", "Aspect of the Wild", "Aspect of the Viper", "Aspect of the Falcon" } },
+	-- Warrior
+	{ id = "WARRIOR.shout", class = "WARRIOR", label = "Battle Shout / Commanding Shout",
+		spells = { "Battle Shout", "Commanding Shout" } },
+	-- Rogue: nothing self-cast and lasting (poisons are weapon enchants, not auras)
 	-- Well Fed: one aura name, one spell ID per food tier (dozens; Forever adds its own). No table:
 	-- the IDs are LEARNED - whenever the buff is seen on the player out of combat, its spell ID is
 	-- remembered in SV (db.wellFedIDs) and becomes the tested set. Buttons: any item whose use
@@ -27,14 +91,31 @@ VSBH.WELL_FED_REFERENCE_SPELL = 19705 -- retail "Well Fed" spell; used only to f
 local function IsFood(r) return r.kind == "food" end
 VSBH.IsFoodReminder = IsFood
 
+-- Resolve names -> { name, ranks } using this class's data; reminders of other classes are dropped
+-- here too (nothing on this character can ever match them). A name missing from the data is
+-- reported once and skipped.
+VSBH.Reminders = {}
 local reminderByRank = {} -- any rank id -> reminder
-for _, r in ipairs(VSBH.Reminders) do
-	r.auraSet, r.buttonSet = {}, {}
-	for _, spell in ipairs(r.spells) do
-		for _, id in ipairs(spell.ranks) do
-			r.buttonSet[id] = true
-			reminderByRank[id] = r
+for _, r in ipairs(CATALOGUE) do
+	if r.class == nil or r.class == VSBH.playerClass then
+		local resolved = {}
+		for _, name in ipairs(r.spells) do
+			local ranks = classSpells[name]
+			if ranks then
+				resolved[#resolved + 1] = { name = name, ranks = ranks }
+			else
+				VSBH.WarnOnce("spell:" .. name, string.format("reminder %s: spell '%s' is not in the %s data", r.id, name, tostring(VSBH.playerClass)))
+			end
 		end
+		r.spells = resolved
+		r.auraSet, r.buttonSet = {}, {}
+		for _, spell in ipairs(resolved) do
+			for _, id in ipairs(spell.ranks) do
+				r.buttonSet[id] = true
+				reminderByRank[id] = r
+			end
+		end
+		VSBH.Reminders[#VSBH.Reminders + 1] = r
 	end
 end
 
