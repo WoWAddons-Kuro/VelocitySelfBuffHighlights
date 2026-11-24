@@ -179,7 +179,7 @@ function VSBH.ResolveReminders()
 		local set, known, sig = {}, false, {}
 		if IsFood(r) then
 			-- tested set = every Well Fed ID learned so far; "known" once at least one has been seen
-			local ids = VSBH.db and VSBH.db.wellFedIDs or {}
+			local ids = VSBH.WellFedIDs()
 			for id in pairs(ids) do set[id] = true; sig[#sig + 1] = id; known = true end
 			table.sort(sig)
 			local key = table.concat(sig, ",")

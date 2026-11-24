@@ -202,6 +202,16 @@ SlashCmdList.VELOCITYSELFBUFFHIGHLIGHTS = function(msg)
 		VSBH.DebugMacros()
 	elseif msg == "buffs" and VSBH.DebugBuffs then
 		VSBH.DebugBuffs()
+	elseif msg == "slots" then
+		-- every non-empty Blizzard action button, raw: what GetActionInfo says it holds
+		VSBH.ForEachActionButton(function(button, spellID, macroName, itemID)
+			local kind, id, sub, sid = GetActionInfo(button.action or 0)
+			if kind then
+				Log("  %s slot %s: %s id=%s sub=%s spell=%s | parsed spell=%s macro=%s item=%s vis=%s",
+					button:GetName(), tostring(button.action), tostring(kind), tostring(id), tostring(sub), tostring(sid),
+					tostring(spellID), tostring(macroName), tostring(itemID), tostring(button:IsVisible()))
+			end
+		end)
 	else
 		VSBH.OpenOptions()
 	end

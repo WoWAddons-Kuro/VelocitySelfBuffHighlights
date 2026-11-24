@@ -27,9 +27,16 @@ function VSBH.ForEachActionButton(fn)
 						-- GetMacroInfo(id) is nil. GetActionText(slot) is the macro's name on any client.
 						macroName = GetActionText(slot) or GetMacroInfo(id)
 						if macroName == "" then macroName = nil end
+						-- a "/use <food>" macro: the item its current branch resolves to
+						if not spellID and GetMacroItem then
+							local itemName, itemLink = GetMacroItem(id)
+							if itemLink then itemID = tonumber(itemLink:match("item:(%d+)")) end
+							if not itemID and itemName and C_Item and C_Item.GetItemInfoInstant then itemID = C_Item.GetItemInfoInstant(itemName) end
+							if not itemID and itemName and GetItemInfoInstant then itemID = GetItemInfoInstant(itemName) end
+						end
 					end
 				end
-				fn(button, spellID, macroName)
+				fn(button, spellID, macroName, itemID)
 			end
 		end
 	end
