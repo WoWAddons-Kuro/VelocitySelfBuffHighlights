@@ -26,5 +26,6 @@ Bars.lua
 Core.lua
 Mirrors.lua
 LowRank.lua
+Countdown.lua
 Tooltip.lua
 Options.lua

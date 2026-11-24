@@ -137,6 +137,15 @@ local function CreateOptions()
 	lowDesc:SetPoint("TOPLEFT", low, "BOTTOMLEFT", 28, 2); lowDesc:SetWidth(WIDTH - 28); lowDesc:SetJustifyH("LEFT")
 	lowDesc:SetText("A red down arrow on any button whose spell is a lower rank than one you know (any class, any spell), with the ranks in the tooltip.")
 	last = lowDesc
+	local cd = NewCheck(optionsFrame, "Show a countdown for the last 10 seconds of a buff (out of combat)")
+	cd:SetPoint("TOPLEFT", last, "BOTTOMLEFT", -28, -8)
+	cd:SetScript("OnClick", function(self) VSBH.SetCountdownEnabled(self:GetChecked() and true or false) end)
+	cd.Update = function(self) self:SetChecked(VSBH.IsCountdownEnabled()) end
+	reminderChecks[#reminderChecks + 1] = cd
+	local cdDesc = optionsFrame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	cdDesc:SetPoint("TOPLEFT", cd, "BOTTOMLEFT", 28, 2); cdDesc:SetWidth(WIDTH - 28); cdDesc:SetJustifyH("LEFT")
+	cdDesc:SetText("The seconds left are written over the buff's button as it runs out. Hidden in combat.")
+	last = cdDesc
 
 	-- Section 2: macro mirrors
 	local h2 = optionsFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")

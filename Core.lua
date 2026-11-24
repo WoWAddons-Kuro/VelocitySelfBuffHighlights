@@ -129,6 +129,7 @@ function VSBH.Refresh()
 	stage("overlays", Client.RefreshMissingOverlays, activeList)
 	if VSBH.RefreshMirrors then stage("mirrors", VSBH.RefreshMirrors) end
 	if VSBH.RefreshLowRank then stage("lowrank", VSBH.RefreshLowRank) end
+	if VSBH.RefreshCountdownStage then stage("countdown", VSBH.RefreshCountdownStage) end
 end
 
 --------------------------------------------------------------------------------
