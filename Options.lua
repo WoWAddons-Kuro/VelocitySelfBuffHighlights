@@ -103,7 +103,7 @@ local function CreateOptions()
 	local last = h1
 	local any = false
 	for _, r in ipairs(VSBH.Reminders) do
-		if r.class == VSBH.playerClass then
+		if r.class == nil or r.class == VSBH.playerClass then
 			any = true
 			local cb = NewCheck(optionsFrame, r.label)
 			cb:SetPoint("TOPLEFT", last, "BOTTOMLEFT", last == h1 and -2 or 0, last == h1 and -6 or -2)
@@ -118,6 +118,25 @@ local function CreateOptions()
 		none:SetPoint("TOPLEFT", h1, "BOTTOMLEFT", 0, -6); none:SetText("No reminders defined for this class yet.")
 		last = none
 	end
+	-- suppression (buff reminders only; never the auto-attack mirrors)
+	local sup = NewCheck(optionsFrame, "Suppress buff highlights while resting and out of combat")
+	sup:SetPoint("TOPLEFT", last, "BOTTOMLEFT", last == h1 and -2 or 0, -10)
+	sup:SetScript("OnClick", function(self) VSBH.SetSuppressResting(self:GetChecked() and true or false) end)
+	sup.Update = function(self) self:SetChecked(VSBH.db and VSBH.db.suppressResting or false) end
+	reminderChecks[#reminderChecks + 1] = sup
+	local supDesc = optionsFrame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	supDesc:SetPoint("TOPLEFT", sup, "BOTTOMLEFT", 28, 2); supDesc:SetWidth(WIDTH - 28); supDesc:SetJustifyH("LEFT")
+	supDesc:SetText("In an inn or city nothing glows until you leave. If you fight while resting (a duel), highlights come back until you leave the rested area. Auto-attack mirrors are never suppressed.")
+	last = supDesc
+	local low = NewCheck(optionsFrame, "Mark low-rank spells on the bars")
+	low:SetPoint("TOPLEFT", last, "BOTTOMLEFT", -28, -8)
+	low:SetScript("OnClick", function(self) VSBH.SetLowRankBadgeEnabled(self:GetChecked() and true or false) end)
+	low.Update = function(self) self:SetChecked(VSBH.IsLowRankBadgeEnabled()) end
+	reminderChecks[#reminderChecks + 1] = low
+	local lowDesc = optionsFrame:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+	lowDesc:SetPoint("TOPLEFT", low, "BOTTOMLEFT", 28, 2); lowDesc:SetWidth(WIDTH - 28); lowDesc:SetJustifyH("LEFT")
+	lowDesc:SetText("A red down arrow on any button whose spell is a lower rank than one you know (any class, any spell), with the ranks in the tooltip.")
+	last = lowDesc
 
 	-- Section 2: macro mirrors
 	local h2 = optionsFrame:CreateFontString(nil, "ARTWORK", "GameFontNormal")

@@ -7,18 +7,20 @@ local BAR_PREFIXES = {
 	"MultiBarRightButton", "MultiBarLeftButton", "MultiBar5Button", "MultiBar6Button", "MultiBar7Button",
 }
 
--- Calls fn(button, spellID | nil, macroName | nil) for every existing Blizzard action button.
+-- Calls fn(button, spellID | nil, macroName | nil, itemID | nil) for every existing Blizzard action button.
 function VSBH.ForEachActionButton(fn)
 	for _, prefix in ipairs(BAR_PREFIXES) do
 		for i = 1, 12 do
 			local button = _G[prefix .. i]
 			if button then
-				local spellID, macroName
+				local spellID, macroName, itemID
 				local slot = button.action
 				if slot then
 					local kind, id, _, sid = GetActionInfo(slot)
 					if kind == "spell" then
 						spellID = id
+					elseif kind == "item" then
+						itemID = id
 					elseif kind == "macro" then
 						spellID = sid or GetMacroSpell(id)
 						-- Forever hands back a global macro ID here, not a 1-based slot, so

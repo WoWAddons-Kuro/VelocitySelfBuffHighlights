@@ -30,7 +30,9 @@ local mirrors = {} -- button -> { frame, glow, flash, melee = bool, ranged = boo
 local state = { melee = false, ranged = false }
 
 local function IsCurrent(spellID)
-	local ok, v = pcall(IsCurrentSpell, spellID)
+	local fn = IsCurrentSpell or (C_Spell and C_Spell.IsCurrentSpell)
+	if type(fn) ~= "function" then return false end -- removed on Forever; events carry the state
+	local ok, v = pcall(fn, spellID)
 	if not ok then VSBH.WarnOnce("iscurrent", "IsCurrentSpell error: " .. tostring(v)); return false end
 	if issecretvalue and issecretvalue(v) then VSBH.WarnOnce("iscurrent-secret", "IsCurrentSpell is secret; mirrors will use events only"); return false end
 	return v and true or false
