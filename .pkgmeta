@@ -1,0 +1,8 @@
+package-as: VelocitySelfBuffHighlights
+
+ignore:
+  - README.md
+  - SPECS
+  - Assets/Screenshots
+  - .gitignore
+  - .pkgmeta
