@@ -97,11 +97,18 @@ function VSBH.Refresh()
 	local suppressed = VSBH.SuppressionActive()
 	local inCombat = InCombatLockdown()
 	deferred = false
+	local function HaveItem(itemID)
+		local count
+		if C_Item and C_Item.GetItemCount then count = C_Item.GetItemCount(itemID)
+		elseif GetItemCount then count = GetItemCount(itemID) end
+		return (count or 0) > 0
+	end
 	VSBH.ForEachActionButton(function(button, spellID, _, itemID)
 		local r
 		if button:IsVisible() then
 			r = VSBH.ReminderForSpell(spellID)
-			if not r and itemID and VSBH.FoodItemMatches(itemID) then r = VSBH.FoodReminder end
+			-- an item slot only counts while the player actually has some of the item
+			if not r and itemID and HaveItem(itemID) and VSBH.FoodItemMatches(itemID) then r = VSBH.FoodReminder end
 		end
 		if r and (not r.known or (r.class and r.class ~= VSBH.playerClass) or not VSBH.IsReminderEnabled(r)) then r = nil end
 		if r and suppressed then r = nil end
@@ -146,6 +153,8 @@ f:RegisterEvent("UPDATE_BONUS_ACTIONBAR")
 f:RegisterEvent("SPELLS_CHANGED")
 f:RegisterEvent("PLAYER_REGEN_DISABLED")
 f:RegisterEvent("PLAYER_UPDATE_RESTING")
+-- item counts change (food eaten / bought / looted): a slot pointing at an item you have 0 of must not glow
+f:RegisterEvent("BAG_UPDATE_DELAYED")
 if Client.WantsAuraEvents() then f:RegisterUnitEvent("UNIT_AURA", "player") end
 f:SetScript("OnEvent", function(_, event, arg1)
 	if event == "ADDON_LOADED" then

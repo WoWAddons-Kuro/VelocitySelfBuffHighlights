@@ -82,9 +82,9 @@ local CATALOGUE = {
 	-- Well Fed: one aura name, one spell ID per food tier (dozens; Forever adds its own). No table:
 	-- the IDs are LEARNED - whenever the buff is seen on the player out of combat, its spell ID is
 	-- remembered in SV (db.wellFedIDs) and becomes the tested set. Buttons: any item whose use
-	-- spell's description mentions the Well Fed buff (see FoodItemMatches). Default off.
+	-- spell's description mentions the Well Fed buff (see FoodItemMatches). Default on.
 	{ id = "ALL.wellfed", class = nil, label = "Highlight buff food when not Well Fed", kind = "food",
-		defaultOff = true, spells = {}, outOfCombatOnly = true },
+		spells = {}, outOfCombatOnly = true },
 }
 VSBH.WELL_FED_REFERENCE_SPELL = 19705 -- retail "Well Fed" spell; used only to fetch the localised name
 
