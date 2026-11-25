@@ -2,7 +2,7 @@
 ## Title: Velocity Self Buff Highlights
 ## Notes: Glows the action button of a self-buff while it is missing (Thorns, Mark of the Wild, seals...), and mirrors melee / ranged auto-attack state onto the macro buttons you choose. Works in combat on WoW Forever.
 ## Author: Kuro
-## Version: v2026.11.24.1937
+## Version: @project-version@
 ## SavedVariables: VelocitySelfBuffHighlightsDB
 ## IconTexture: Interface\AddOns\VelocitySelfBuffHighlights\Assets\VelocitySelfBuffHighlights.tga
 ## X-Website: https://github.com/WoWAddons-Kuro/VelocitySelfBuffHighlights
